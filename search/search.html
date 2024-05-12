@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Aura Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #searchContainer {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #destinationInput {
+            width: 200px;
+            padding: 5px;
+            font-size: 16px;
+        }
+
+        #trackButton {
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="map" style="width:100%; height: 90vh"></div>
+    <div id="searchContainer">
+        <input type="text" id="destinationInput" placeholder="Enter destination">
+        <button id="trackButton" onclick="trackRoute()">Track Route</button>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+    <script>
+        var map = L.map('map').setView([13.0827, 80.2707], 11); // Chennai coordinates
+        mapLink = "<a href='http://openstreetmap.org'>OpenStreetMap</a>";
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', { attribution: 'Leaflet &copy; ' + mapLink + ', contribution', maxZoom: 18 }).addTo(map);
+
+        var userIcon = L.icon({
+            iconUrl: 'img/user.svg',
+            iconSize: [30, 30]
+        });
+
+        var marker = L.marker([13.0827, 80.2707], { icon: userIcon }).addTo(map);
+
+        function trackRoute() {
+            var destination = document.getElementById('destinationInput').value;
+            if (destination.trim() === "") {
+                alert("Please enter a destination.");
+                return;
+            }
+
+            var geocodeUrl = "https://nominatim.openstreetmap.org/search?format=json&q=" + destination;
+
+            fetch(geocodeUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        var lat = data[0].lat;
+                        var lon = data[0].lon;
+                        var destinationLatLng = L.latLng(lat, lon);
+
+                        L.Routing.control({
+                            waypoints: [
+                                L.latLng(13.0827, 80.2707), // Chennai coordinates
+                                destinationLatLng
+                            ]
+                        }).on('routesfound', function (e) {
+                            var routes = e.routes;
+                            console.log(routes);
+
+                            e.routes[0].coordinates.forEach(function (coord, index) {
+                                setTimeout(function () {
+                                    marker.setLatLng([coord.lat, coord.lng]);
+                                }, 100 * index);
+                            });
+
+                        }).addTo(map);
+                    } else {
+                        alert("Destination not found. Please enter a valid destination.");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching geocode:', error);
+                    alert("Error fetching geocode. Please try again later.");
+                });
+        }
+    </script>
+</body>
+
+</html>
