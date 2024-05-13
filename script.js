@@ -55,6 +55,20 @@ const bikeData = [
       image: "images/cycle8.png",
       tag: "Free Cancellation",
     },
+    {
+      name: "ECO VELO",
+      type: "Eco-friendly hybrid e-bike",
+      price: 39,
+      image: "images/cycle9.png",
+      tag: "Free Cancellation",
+    },
+    {
+      name: "Velocity X",
+      type: "Sport Cycling Bike",
+      price: 50,
+      image: "images/cycle10.png",
+      tag: "Free Cancellation",
+    },
   ];
 
   //function to create bike
